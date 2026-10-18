@@ -3,9 +3,9 @@
   "credentialId": "0x04de1043bf44b185ad1d34caa720b3b3bbe38ac216bb3665fff70ff71d5edce6",
   "type": "Degree",
   "institution": {
-    "name": "MUET Jamshoro (Demo Node)",
+    "name": "MUET Jamshoro",
     "department": "Department of Computer Systems Engineering",
-    "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
+    "address": "0x105E339C372be257e3abD0d4B541145970A26e01"
   },
   "holder": {
     "name": "Sara Ahmed Memon",

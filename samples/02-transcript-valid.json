@@ -3,9 +3,9 @@
   "credentialId": "0x101b271562891ae33e6c7689c6d33f0bb2ca1e8bb43906b04e675f9d6f05b347",
   "type": "Transcript",
   "institution": {
-    "name": "MUET Jamshoro (Demo Node)",
+    "name": "MUET Jamshoro",
     "department": "Department of Computer Systems Engineering",
-    "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
+    "address": "0x105E339C372be257e3abD0d4B541145970A26e01"
   },
   "holder": {
     "name": "Bilal Hussain Shah",

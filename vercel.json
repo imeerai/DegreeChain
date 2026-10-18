@@ -9,7 +9,7 @@
   "functions": {
     "api/index.js": {
       "maxDuration": 300,
-      "includeFiles": "{deployments/**,public/deploy-artifacts.json,server/lib/muet-logo.png,node_modules/pdfkit/js/data/**}"
+      "includeFiles": "{deployments/**,public/deploy-artifacts.json,server/lib/muet-logo.png,node_modules/pdfkit/js/**,node_modules/pdfkit/package.json}"
     }
   },
   "framework": null,

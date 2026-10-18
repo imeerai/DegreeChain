@@ -105,7 +105,7 @@ $("#issueBtn").onclick = async () => {
   const f = form();
   if (!f.holder.name || !f.holder.rollNo || !f.programme || !f.awardDate) return show($("#issueMsg"), "Name, roll number, programme and award date are required.", false);
   $("#issueBtn").disabled = true;
-  show($("#issueMsg"), "Waiting for the transaction to be mined…", true);
+  show($("#issueMsg"), "Signing and sending to the blockchain, then waiting for the next block (on Sepolia this takes about 15–30 seconds)…", true);
   try {
     const url = correcting ? `/api/credentials/${correcting}/correct` : "/api/credentials";
     const r = await api(url, { method: "POST", body: f });

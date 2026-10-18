@@ -83,6 +83,7 @@ async function refresh() {
 }
 
 async function vote(action, institution, name) {
+  show($("#voteMsg"), "Vote sent, waiting for the next block (on Sepolia about 15–30 seconds)…", true);
   try {
     const r = await api("/api/council/vote", { method: "POST", body: { action, institution, name, reason: 1 } });
     show($("#voteMsg"), `Vote recorded in block #${r.block} (gas ${r.gasUsed}).`, true);

@@ -21,7 +21,7 @@ const nonce = {}; // fresh wallets start at 0; START_NONCE_<index> overrides
     nonce[p.from] ??= Number(process.env[`START_NONCE_${p.from}`] || 0);
     raw.push({ fn: p.fn, from: w.address, raw: await w.signTransaction({
       type: 2, chainId: dep.chainId, nonce: nonce[p.from]++, to: dep.contracts.CredentialRegistry.address,
-      data: reg.encodeFunctionData(p.fn, p.args), gasLimit: p.gas, maxFeePerGas: maxFee, maxPriorityFeePerGas: tip,
+      data: reg.encodeFunctionData(p.fn, p.args), gasLimit: Math.round(p.gas * Number(process.env.GAS_MULT || 1)), maxFeePerGas: maxFee, maxPriorityFeePerGas: tip,
     }) });
   }
   fs.writeFileSync(path.join(__dirname, "..", "data", "raw-txs.json"), JSON.stringify(raw, null, 2));

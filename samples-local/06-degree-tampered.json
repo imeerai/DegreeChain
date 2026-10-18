@@ -1,0 +1,20 @@
+{
+  "schema": "degreechain/v1",
+  "credentialId": "0x04de1043bf44b185ad1d34caa720b3b3bbe38ac216bb3665fff70ff71d5edce6",
+  "type": "Degree",
+  "institution": {
+    "name": "MUET Jamshoro (Demo Node)",
+    "department": "Department of Computer Systems Engineering",
+    "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
+  },
+  "holder": {
+    "name": "Sara Ahmed Memon",
+    "fatherName": "Ahmed Ali Memon",
+    "rollNo": "21CS901"
+  },
+  "programme": "Bachelor of Engineering in Computer Systems Engineering",
+  "cgpa": "3.92",
+  "awardDate": "2025-12-20",
+  "issuedOn": "2026-10-17",
+  "salt": "hTRJfq1aIsvR92O0jucYeA"
+}

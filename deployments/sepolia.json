@@ -1,0 +1,641 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "explorer": "https://sepolia.etherscan.io",
+  "deployBlock": 11940623,
+  "actors": {
+    "governors": [
+      {
+        "label": "HEC Representative",
+        "address": "0xB1F83adE9836142278b9f5629c65a0f2e6c443DA",
+        "index": 0
+      },
+      {
+        "label": "University Representative",
+        "address": "0xB4223b0942a97C2e55fe027161b54Bbf87d2E11A",
+        "index": 1
+      },
+      {
+        "label": "Independent Auditor",
+        "address": "0xA4e0925402aF20C7659c983c478433be0266CbBE",
+        "index": 2
+      }
+    ],
+    "institutions": [
+      {
+        "label": "MUET Jamshoro",
+        "address": "0x105E339C372be257e3abD0d4B541145970A26e01",
+        "index": 3
+      },
+      {
+        "label": "Partner University",
+        "address": "0xCCcBbdF50E421e30CA5E446242Deb9a9b79107B7",
+        "index": 4
+      },
+      {
+        "label": "Unaccredited Institute",
+        "address": "0x8c1C2348240096f42B28DA0Fa29DF04495Ef2672",
+        "index": 5
+      }
+    ]
+  },
+  "contracts": {
+    "GovernanceCouncil": {
+      "address": "0x6f81F3d18Ca265E0a7301bdC18cBe6e3081fAF5a",
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "address[]",
+              "name": "governors_",
+              "type": "address[]"
+            },
+            {
+              "internalType": "uint8",
+              "name": "quorum_",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "inputs": [],
+          "name": "BadQuorum",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "DuplicateGovernor",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "EmptyCouncil",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "ZeroAddress",
+          "type": "error"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "governor",
+              "type": "address"
+            }
+          ],
+          "name": "GovernorAdded",
+          "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "governors",
+          "outputs": [
+            {
+              "internalType": "address[]",
+              "name": "",
+              "type": "address[]"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "isGovernor",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "quorum",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        }
+      ]
+    },
+    "InstitutionRegistry": {
+      "address": "0x9fF657E5aFae00f27a270041D307D4f200aead10",
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "contract ICouncil",
+              "name": "council_",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "inputs": [],
+          "name": "AlreadyActive",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "AlreadyVoted",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "EmptyName",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "NotActive",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "NotGovernor",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "ZeroAddress",
+          "type": "error"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "institution",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "governor",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "votes",
+              "type": "uint8"
+            }
+          ],
+          "name": "ApprovalVoted",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "institution",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "name": "InstitutionAccredited",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "institution",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "reasonCode",
+              "type": "uint8"
+            }
+          ],
+          "name": "InstitutionSuspended",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "institution",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "governor",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "votes",
+              "type": "uint8"
+            }
+          ],
+          "name": "SuspensionVoted",
+          "type": "event"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "inst",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "name": "approveInstitution",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "council",
+          "outputs": [
+            {
+              "internalType": "contract ICouncil",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "name": "institutions",
+          "outputs": [
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "enum InstitutionRegistry.Status",
+              "name": "status",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint8",
+              "name": "votes",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint32",
+              "name": "round",
+              "type": "uint32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "inst",
+              "type": "address"
+            }
+          ],
+          "name": "isActive",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "inst",
+              "type": "address"
+            },
+            {
+              "internalType": "uint8",
+              "name": "reasonCode",
+              "type": "uint8"
+            }
+          ],
+          "name": "suspendInstitution",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ]
+    },
+    "CredentialRegistry": {
+      "address": "0x23EF04fDC06D1349e18D1eEE761e2376b82cefD6",
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "contract IInstitutionRegistry",
+              "name": "registry_",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "inputs": [],
+          "name": "AlreadyExists",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "EmptyValue",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "NotAccredited",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "NotIssuer",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "NotValid",
+          "type": "error"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "oldId",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "newId",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "issuer",
+              "type": "address"
+            }
+          ],
+          "name": "CredentialCorrected",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "id",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "issuer",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "enum CredentialRegistry.Kind",
+              "name": "kind",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "bytes32",
+              "name": "docHash",
+              "type": "bytes32"
+            }
+          ],
+          "name": "CredentialIssued",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "id",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "issuer",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "reasonCode",
+              "type": "uint8"
+            }
+          ],
+          "name": "CredentialRevoked",
+          "type": "event"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "oldId",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "newId",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "newHash",
+              "type": "bytes32"
+            }
+          ],
+          "name": "correct",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "id",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "docHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "enum CredentialRegistry.Kind",
+              "name": "kind",
+              "type": "uint8"
+            }
+          ],
+          "name": "issue",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "registry",
+          "outputs": [
+            {
+              "internalType": "contract IInstitutionRegistry",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "id",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint8",
+              "name": "reasonCode",
+              "type": "uint8"
+            }
+          ],
+          "name": "revoke",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "totalIssued",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "id",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "docHash",
+              "type": "bytes32"
+            }
+          ],
+          "name": "verify",
+          "outputs": [
+            {
+              "internalType": "enum CredentialRegistry.CredStatus",
+              "name": "status",
+              "type": "uint8"
+            },
+            {
+              "internalType": "bool",
+              "name": "hashMatches",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "issuerActive",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "issuer",
+              "type": "address"
+            },
+            {
+              "internalType": "uint64",
+              "name": "issuedAt",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "replacedBy",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        }
+      ]
+    }
+  },
+  "deployer": "0x9392F3C9E457C47279ce2b315BF0070e3C05A859"
+}

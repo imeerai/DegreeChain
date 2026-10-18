@@ -1,7 +1,7 @@
-// Issues the demo credentials and writes them to samples/.
+// Issues the demo credentials and writes them to samples-local/ (local chain) or samples/ (Sepolia).
 require("dotenv").config();
 // Deterministic: on a fresh `npx hardhat node` + `npm run deploy`, the same IDs, keys
-// and fingerprints are produced, so the files in samples/ always verify the same way.
+// and fingerprints are produced, so the sample files always verify the same way.
 // Usage: node scripts/seed.js   (node and server do NOT need to be running together)
 // OFFLINE=1 node scripts/seed.js  -> no chain access: writes samples/, data/vault-rows.json and
 //   data/plan.json (the on-chain calls still to be made, signed later by scripts/sign-plan.js).
@@ -15,7 +15,8 @@ const plan = [], vaultRows = {};
 const vault = require("../server/lib/vault");
 
 const NET = process.env.NETWORK || "localhost";
-const SAMPLES = path.join(__dirname, "..", NET === "localhost" ? "samples" : `samples-${NET}`);
+// samples/ = live Sepolia deployment, samples-local/ = local Hardhat chain
+const SAMPLES = path.join(__dirname, "..", NET === "localhost" ? "samples-local" : "samples");
 const det = (name) => (label, n) =>
   crypto.createHmac("sha256", "degreechain-demo-seed").update(`${name}/${label}`).digest().subarray(0, n);
 
@@ -104,7 +105,7 @@ async function main() {
     fs.writeFileSync(path.join(__dirname, "..", "data", "plan.json"), JSON.stringify(plan, null, 2));
     fs.writeFileSync(path.join(__dirname, "..", "data", "vault-rows.json"), JSON.stringify(vaultRows, null, 2));
     console.log(`\nOFFLINE: ${plan.length} calls in data/plan.json, ${Object.keys(vaultRows).length} vault rows`);
-  } else console.log(`\nSamples written to samples/ (registry ${deployment.contracts.CredentialRegistry.address})`);
+  } else console.log(`\nSamples written to ${path.basename(SAMPLES)}/ (registry ${deployment.contracts.CredentialRegistry.address})`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

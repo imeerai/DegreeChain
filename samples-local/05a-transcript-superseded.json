@@ -1,0 +1,32 @@
+{
+  "schema": "degreechain/v1",
+  "credentialId": "0xce5649a30c6ab3f05ff6fd3486372e89f1a24ecc62ca6408f714c39e7f393cdb",
+  "type": "Transcript",
+  "institution": {
+    "name": "MUET Jamshoro (Demo Node)",
+    "department": "Department of Computer Systems Engineering",
+    "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
+  },
+  "holder": {
+    "name": "Zainab Somro",
+    "fatherName": "Ghulam Rasool Soomro",
+    "rollNo": "21CS905"
+  },
+  "programme": "Bachelor of Engineering in Computer Systems Engineering",
+  "cgpa": "3.70",
+  "awardDate": "2025-12-20",
+  "issuedOn": "2026-10-17",
+  "salt": "kXMpXAId0IwaG6SzUCOoXg",
+  "semesters": [
+    {
+      "term": "Fall 2021",
+      "credits": "18",
+      "gpa": "3.65"
+    },
+    {
+      "term": "Spring 2022",
+      "credits": "19",
+      "gpa": "3.75"
+    }
+  ]
+}

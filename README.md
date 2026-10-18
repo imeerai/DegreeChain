@@ -14,11 +14,12 @@ Universities record a **fingerprint** (salted SHA-256) of every degree, transcri
 | `contracts/` | 5 Solidity files: `GovernanceCouncil`, `InstitutionRegistry`, `CredentialRegistry` and two interfaces |
 | `test/DegreeChain.test.js` | 14 unit tests (Mocha/Chai) |
 | `scripts/deploy.js` | Deploys the 3 contracts and accredits the 2 demo universities |
-| `scripts/seed.js` | Issues the sample credentials and writes them to `samples/` |
+| `scripts/seed.js` | Issues the sample credentials (`samples-local/` on the local chain, `samples/` for Sepolia) |
 | `scripts/measure.js` | Measures gas, throughput, block capacity and storage growth |
 | `server/` | Node.js + Express backend (issuing, encryption, PDF/QR, verification API) |
 | `public/` | Web UI: home, verify, university portal, council portal (plain HTML/CSS/JS) |
-| `samples/` | Ready-made credentials (PDF + JSON) to test verification |
+| `samples/` | Ready-made credentials (PDF + JSON) for the **live** site on Sepolia |
+| `samples-local/` | The same credentials for the local Hardhat chain (`npm run setup`) |
 | `reports/` | Real outputs of tests, coverage, Slither and measurements |
 | `docs/` | Viva Q&A, diagrams and screenshots |
 | `public/deploy.html`, `api/`, `vercel.json` | Live deployment: MetaMask deploy page and Vercel entry point |
@@ -73,8 +74,8 @@ Change them in `.env`.
 ## 6. How to use it
 
 **Verify a credential (employer / embassy)** – open `/verify.html`, then either
-- upload one of the `.json` files from `samples/`, or
-- open the link inside the QR code (listed in `samples/expected-results.json`), or scan the QR on a sample PDF with a phone that can reach your PC.
+- upload one of the `.json` files from `samples-local/` (local chain) or `samples/` (live site), or
+- open the link inside the QR code (listed in `samples-local/expected-results.json`), or scan the QR on a sample PDF with a phone that can reach your PC.
 
 | Sample file | Expected result |
 |---|---|
@@ -83,10 +84,10 @@ Change them in `.env`.
 | `03-microcredential-valid` | VERIFIED (issued by Partner University) |
 | `04-degree-revoked` | REVOKED |
 | `05a-transcript-superseded` | SUPERSEDED (points to the corrected one) |
-| `05b-transcript-corrected` | VERIFIED |
+| `05b-transcript-corrected` | VERIFIED (on the live site it was revoked during testing, so it shows REVOKED there) |
 | `06-degree-tampered.json` | NOT AUTHENTIC (CGPA changed 3.12 → 3.92) |
 
-The samples are deterministic: on a fresh chain, `npm run setup` always produces the same IDs and keys, so these files keep working.
+The samples are deterministic: on a fresh chain, `npm run setup` always produces the same IDs and keys, so these files keep working. Files from `samples/` are for the live site and will show NOT AUTHENTIC on a local chain (different university wallet), and the other way round.
 
 **Issue a credential (university)** – sign in at `/university.html`, fill the form, click *Sign & record on blockchain*. You get the PDF with QR code, the `.json` credential file and the verification link. From the list you can **Correct** (old one becomes *Superseded*), **Revoke**, or **Erase data** (deletes the encrypted record = right to erasure).
 
@@ -126,6 +127,8 @@ node server/lib/crypto.js   # self-check of hashing and encryption
 This is a teaching prototype. The private keys come from Hardhat's public test mnemonic and the passwords are demo values. Never use them on a real network.
 
 ## 11. Live deployment (Sepolia testnet + Vercel)
+
+**Live system:** https://degreechain-muet.vercel.app · contracts on Sepolia: `CredentialRegistry` [0x23EF04fDC06D1349e18D1eEE761e2376b82cefD6](https://sepolia.etherscan.io/address/0x23EF04fDC06D1349e18D1eEE761e2376b82cefD6) · sample files for the live site are in `samples/` (the ones in `samples-local/` only work with the local Hardhat chain) and all transactions are listed in `reports/sepolia-transactions.txt`.
 
 The same code runs on the internet like any website. Where each part lives:
 

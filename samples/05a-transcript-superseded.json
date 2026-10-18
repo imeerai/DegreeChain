@@ -3,9 +3,9 @@
   "credentialId": "0xce5649a30c6ab3f05ff6fd3486372e89f1a24ecc62ca6408f714c39e7f393cdb",
   "type": "Transcript",
   "institution": {
-    "name": "MUET Jamshoro (Demo Node)",
+    "name": "MUET Jamshoro",
     "department": "Department of Computer Systems Engineering",
-    "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
+    "address": "0x105E339C372be257e3abD0d4B541145970A26e01"
   },
   "holder": {
     "name": "Zainab Somro",

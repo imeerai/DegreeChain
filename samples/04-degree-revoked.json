@@ -3,9 +3,9 @@
   "credentialId": "0x629c769342098c4c48ed69ef23c81320b6cfae7f2de6373a14505eab6eeb4e07",
   "type": "Degree",
   "institution": {
-    "name": "MUET Jamshoro (Demo Node)",
+    "name": "MUET Jamshoro",
     "department": "Department of Computer Systems Engineering",
-    "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
+    "address": "0x105E339C372be257e3abD0d4B541145970A26e01"
   },
   "holder": {
     "name": "Kamran Ali Jatoi",
