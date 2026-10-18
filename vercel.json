@@ -1,0 +1,17 @@
+{
+  "outputDirectory": "public",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    }
+  ],
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 300,
+      "includeFiles": "{deployments/**,public/deploy-artifacts.json,server/lib/muet-logo.png,node_modules/pdfkit/js/data/**}"
+    }
+  },
+  "framework": null,
+  "buildCommand": "echo \"no build step\""
+}

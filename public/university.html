@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>University portal · DegreeChain</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header><div class="wrap">
+  <a class="brand" href="/">DegreeChain <small>Academic Credential Verification</small></a>
+  <nav><a href="/">Home</a><a href="/verify.html">Verify</a><a href="/university.html" class="on">University</a><a href="/council.html">Council</a></nav>
+</div></header>
+
+<main><div class="wrap">
+  <h1>University portal</h1>
+  <p class="lead" id="who">Sign in with the examination office account of your university.</p>
+
+  <div class="box" id="login">
+    <div class="row">
+      <div><label>Institution account</label><select id="inst"></select></div>
+      <div><label>Password</label><input type="password" id="pw" placeholder="demo: uni123"></div>
+      <div style="flex:0"><button id="loginBtn">Sign in</button></div>
+    </div>
+    <div id="loginMsg" class="hidden"></div>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="box">
+      <h2 id="formTitle">Issue a new credential</h2>
+      <div class="grid">
+        <div><label>Type</label><select id="type"><option>Degree</option><option>Transcript</option><option>MicroCredential</option></select></div>
+        <div><label>Student name</label><input id="name"></div>
+        <div><label>Father's name</label><input id="father"></div>
+        <div><label>Roll number</label><input id="roll" placeholder="22CS000"></div>
+        <div><label>Programme / course</label><input id="programme" placeholder="Bachelor of Engineering in Computer Systems Engineering"></div>
+        <div><label>Department</label><input id="dept" value="Department of Computer Systems Engineering"></div>
+        <div class="f-deg"><label>CGPA</label><input id="cgpa" placeholder="3.45"></div>
+        <div><label>Award date</label><input id="award" type="date"></div>
+        <div class="f-micro hidden"><label>Contact hours</label><input id="hours" placeholder="20"></div>
+        <div class="f-micro hidden"><label>Assessment result</label><input id="grade" placeholder="Pass with distinction"></div>
+      </div>
+      <div class="f-tr hidden"><label>Semesters (one per line: term, credit hours, GPA)</label>
+        <textarea id="sems" rows="4">Fall 2022, 18, 3.20
+Spring 2023, 19, 3.41</textarea></div>
+      <p style="margin-top:14px">
+        <button id="issueBtn">Sign &amp; record on blockchain</button>
+        <button id="cancelFix" class="ghost hidden">Cancel correction</button>
+      </p>
+      <div id="issueMsg" class="hidden"></div>
+    </div>
+
+    <div class="box">
+      <h2>Credentials issued by this university</h2>
+      <table><thead><tr><th>Credential ID</th><th>Type</th><th>Roll No.</th><th>Issued</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="list"></tbody></table>
+      <div id="listMsg" class="hidden"></div>
+    </div>
+  </div>
+</div></main>
+<footer class="wrap"></footer>
+<script src="/js/common.js"></script>
+<script>
+let correcting = null;
+
+function toggleFields() {
+  const t = $("#type").value;
+  document.querySelectorAll(".f-deg").forEach((e) => e.classList.toggle("hidden", t === "MicroCredential"));
+  document.querySelectorAll(".f-tr").forEach((e) => e.classList.toggle("hidden", t !== "Transcript"));
+  document.querySelectorAll(".f-micro").forEach((e) => e.classList.toggle("hidden", t !== "MicroCredential"));
+}
+$("#type").onchange = toggleFields;
+
+api("/api/meta").then((m) => {
+  $("#inst").innerHTML = m.actors.institutions.map((i) => `<option value="${i.index}">${esc(i.label)}</option>`).join("");
+});
+
+$("#loginBtn").onclick = async () => {
+  try {
+    const r = await api("/api/login", { method: "POST", body: { role: "university", index: $("#inst").value, password: $("#pw").value } });
+    sessionStorage.setItem("token", r.token);
+    $("#who").innerHTML = `Signed in as <b>${esc(r.label)}</b> · wallet <code>${r.address}</code>`;
+    $("#login").classList.add("hidden");
+    $("#app").classList.remove("hidden");
+    loadList();
+  } catch (e) { show($("#loginMsg"), esc(e.message), false); }
+};
+
+function form() {
+  const f = {
+    type: $("#type").value,
+    holder: { name: $("#name").value.trim(), fatherName: $("#father").value.trim(), rollNo: $("#roll").value.trim() },
+    programme: $("#programme").value.trim(), department: $("#dept").value.trim(),
+    awardDate: $("#award").value, cgpa: $("#cgpa").value.trim() || null,
+  };
+  if (f.type === "Transcript") f.semesters = $("#sems").value.split("\n").filter(Boolean).map((l) => {
+    const [term, credits, gpa] = l.split(",").map((s) => s.trim());
+    return { term, credits, gpa };
+  });
+  if (f.type === "MicroCredential") Object.assign(f, { hours: $("#hours").value.trim(), grade: $("#grade").value.trim(), cgpa: null });
+  return f;
+}
+
+$("#issueBtn").onclick = async () => {
+  const f = form();
+  if (!f.holder.name || !f.holder.rollNo || !f.programme || !f.awardDate) return show($("#issueMsg"), "Name, roll number, programme and award date are required.", false);
+  $("#issueBtn").disabled = true;
+  show($("#issueMsg"), "Waiting for the transaction to be mined…", true);
+  try {
+    const url = correcting ? `/api/credentials/${correcting}/correct` : "/api/credentials";
+    const r = await api(url, { method: "POST", body: f });
+    const name = r.id.slice(2, 14);
+    const pdf = URL.createObjectURL(new Blob([Uint8Array.from(atob(r.pdfBase64), (c) => c.charCodeAt(0))], { type: "application/pdf" }));
+    const json = URL.createObjectURL(new Blob([JSON.stringify(r.credential, null, 2)], { type: "application/json" }));
+    try { localStorage.setItem("cred:" + r.id, JSON.stringify(r.credential)); } catch {}
+    const tx = r.explorer ? `<a href="${r.explorer}/tx/${r.txHash}" target="_blank">view transaction on Etherscan</a>` : `tx <code>${short(r.txHash)}</code>`;
+    show($("#issueMsg"), `Recorded in block #${r.block} (gas used ${r.gasUsed}) · ${tx}.<br>
+      Credential ID <code>${r.id}</code><br>
+      <a href="${pdf}" download="${name}.pdf">Download PDF with QR</a> · <a href="${json}" download="${name}.json">Download credential file (.json)</a> ·
+      <a href="${r.verifyUrl}" target="_blank">Open verification link</a>`, true);
+    cancelFix();
+    loadList();
+  } catch (e) { show($("#issueMsg"), esc(e.message), false); }
+  $("#issueBtn").disabled = false;
+};
+
+function cancelFix() {
+  correcting = null;
+  $("#formTitle").textContent = "Issue a new credential";
+  $("#cancelFix").classList.add("hidden");
+}
+$("#cancelFix").onclick = cancelFix;
+
+async function loadList() {
+  const rows = await api("/api/credentials");
+  $("#list").innerHTML = rows.map((r) => `<tr>
+    <td><code>${short(r.id)}</code></td><td>${r.kind}</td><td>${esc(r.holderRoll)}</td><td>${r.createdAt}</td>
+    <td><span class="pill ${r.status}">${r.status}</span></td>
+    <td>${r.status === "Valid" ? `<button class="small ghost" onclick="fix('${r.id}')">Correct</button>
+      <button class="small danger" onclick="revoke('${r.id}')">Revoke</button>` : ""}
+      <button class="small ghost" onclick="erase('${r.id}')" title="Delete the encrypted off-chain record">Erase data</button></td></tr>`).join("")
+    || `<tr><td colspan="6">Nothing issued yet.</td></tr>`;
+}
+
+async function revoke(id) {
+  const reason = prompt("Reason code (1 = issued in error, 2 = fraud, 3 = disciplinary)", "2");
+  if (!reason) return;
+  try { await api(`/api/credentials/${id}/revoke`, { method: "POST", body: { reason } }); loadList(); }
+  catch (e) { show($("#listMsg"), esc(e.message), false); }
+}
+
+async function erase(id) {
+  if (!confirm("Delete the encrypted record? The QR link will stop working; only the bare hash stays on-chain.")) return;
+  try { await api(`/api/credentials/${id}/offchain`, { method: "DELETE" }); show($("#listMsg"), "Off-chain record erased.", true); }
+  catch (e) { show($("#listMsg"), esc(e.message), false); }
+}
+
+async function fix(id) {
+  let c = null;
+  try { c = JSON.parse(localStorage.getItem("cred:" + id)); } catch {}
+  if (!c) return show($("#listMsg"), "This browser has no copy of that credential. Upload its .json on the Verify page to read the fields, then issue the corrected one here.", false);
+  $("#type").value = c.type; toggleFields();
+  $("#name").value = c.holder.name; $("#father").value = c.holder.fatherName; $("#roll").value = c.holder.rollNo;
+  $("#programme").value = c.programme; $("#dept").value = c.institution.department || "";
+  $("#cgpa").value = c.cgpa || ""; $("#award").value = c.awardDate;
+  correcting = id;
+  $("#formTitle").textContent = "Correct credential " + short(id) + " (the old one will be marked Superseded)";
+  $("#cancelFix").classList.remove("hidden");
+  scrollTo(0, 0);
+}
+footer();
+</script>
+</body>
+</html>

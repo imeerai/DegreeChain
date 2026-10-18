@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deploy with MetaMask · DegreeChain</title>
+<link rel="stylesheet" href="/css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="brand" href="/">DegreeChain <small>Academic Credential Verification</small></a>
+  <nav><a href="/">Home</a><a href="/verify.html">Verify</a><a href="/university.html">University</a><a href="/council.html">Council</a></nav>
+</div></header>
+
+<main><div class="wrap">
+  <h1>Deploy the smart contracts with MetaMask</h1>
+  <p class="lead">One-time setup by the system administrator. MetaMask signs the deployment on the Sepolia test network;
+  the administrator pays the gas from their own wallet. No private key is entered on this page.</p>
+
+  <div class="box">
+    <h2>1. Connect wallet</h2>
+    <button id="connect">Connect MetaMask</button>
+    <table class="kv" style="margin-top:12px"><tr><th>Account</th><td id="acct">–</td></tr>
+      <tr><th>Network</th><td id="net">–</td></tr><tr><th>Balance</th><td id="bal">–</td></tr></table>
+  </div>
+
+  <div class="box">
+    <h2>2. Deploy contracts</h2>
+    <p>GovernanceCouncil (3 governors, quorum 2) → InstitutionRegistry → CredentialRegistry. MetaMask asks you to confirm three transactions.</p>
+    <button id="deploy" disabled>Deploy 3 contracts</button>
+    <table style="margin-top:12px"><thead><tr><th>Contract</th><th>Address</th><th>Transaction</th></tr></thead><tbody id="deployed"></tbody></table>
+  </div>
+
+  <div class="box">
+    <h2>3. Give gas to the operator wallets</h2>
+    <p>The council governors and university offices sign their own transactions, so each wallet needs a little test ETH.</p>
+    <div class="row"><div><label>ETH per wallet</label><input id="amt" value="0.006"></div><div style="flex:0"><button id="fund" disabled>Send</button></div></div>
+    <table style="margin-top:12px"><thead><tr><th>Wallet</th><th>Address</th><th>Balance</th></tr></thead><tbody id="ops"></tbody></table>
+  </div>
+
+  <div class="box">
+    <h2>4. Deployment record</h2>
+    <p>Copy this value into the hosting provider as the environment variable <code>DEPLOYED</code> (or save it as <code>deployments/sepolia.json</code>), then redeploy the website so the server knows the addresses.</p>
+    <textarea id="out" rows="6" readonly></textarea>
+    <p><button id="dl" class="ghost" disabled>Download deployed.json</button></p>
+    <div id="msg" class="hidden"></div>
+  </div>
+</div></main>
+<script src="/js/common.js"></script>
+<script>
+const SEPOLIA = "0xaa36a7", EXPLORER = "https://sepolia.etherscan.io";
+let art, provider, signer, result = JSON.parse(localStorage.getItem("dc-deploy") || "null");
+const link = (kind, v) => `<a href="${EXPLORER}/${kind}/${v}" target="_blank"><code>${short(v)}</code></a>`;
+const fundable = () => [...art.actors.governors.slice(0, 2), ...art.actors.institutions.slice(0, 2)];
+
+async function refresh() {
+  const a = await signer.getAddress();
+  $("#acct").innerHTML = link("address", a);
+  $("#bal").textContent = ethers.formatEther(await provider.getBalance(a)) + " SepoliaETH";
+  $("#ops").innerHTML = (await Promise.all(fundable().map(async (o) =>
+    `<tr><td>${esc(o.label)}</td><td>${link("address", o.address)}</td><td>${ethers.formatEther(await provider.getBalance(o.address))}</td></tr>`))).join("");
+  if (result) {
+    $("#deployed").innerHTML = Object.entries(result.contracts).map(([n, c]) => `<tr><td>${n}</td><td>${link("address", c.address)}</td><td>${link("tx", c.tx)}</td></tr>`).join("");
+    $("#out").value = JSON.stringify({ ...Object.fromEntries(Object.entries(result.contracts).map(([n, c]) => [n, c.address])),
+      deployBlock: result.deployBlock, chainId: result.chainId, explorer: result.explorer });
+    $("#dl").disabled = false;
+  }
+}
+
+$("#connect").onclick = async () => {
+  try {
+    if (!window.ethereum) throw new Error("MetaMask is not installed in this browser.");
+    await ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: SEPOLIA }] });
+    provider = new ethers.BrowserProvider(window.ethereum);
+    signer = await provider.getSigner();
+    $("#net").textContent = "Sepolia testnet (chain ID 11155111)";
+    art = await fetch("/deploy-artifacts.json").then((r) => r.json());
+    $("#deploy").disabled = !!result; $("#fund").disabled = false;
+    await refresh();
+  } catch (e) { show($("#msg"), esc(e.message), false); }
+};
+
+$("#deploy").onclick = async () => {
+  $("#deploy").disabled = true;
+  try {
+    const me = await signer.getAddress();
+    const contracts = {};
+    let firstBlock = null;
+    const dep = async (name, args) => {
+      show($("#msg"), `Confirm the ${name} deployment in MetaMask…`, true);
+      const f = new ethers.ContractFactory(art.contracts[name].abi, art.contracts[name].bytecode, signer);
+      const c = await f.deploy(...args);
+      const rc = await c.deploymentTransaction().wait();
+      firstBlock ??= rc.blockNumber;
+      contracts[name] = { address: await c.getAddress(), tx: rc.hash, abi: art.contracts[name].abi };
+      $("#deployed").insertAdjacentHTML("beforeend", `<tr><td>${name}</td><td>${link("address", contracts[name].address)}</td><td>${link("tx", rc.hash)}</td></tr>`);
+      return contracts[name].address;
+    };
+    const council = await dep("GovernanceCouncil", [art.actors.governors.map((g) => g.address), art.quorum]);
+    const inst = await dep("InstitutionRegistry", [council]);
+    await dep("CredentialRegistry", [inst]);
+    result = { network: "sepolia", chainId: 11155111, explorer: EXPLORER, deployer: me, deployBlock: firstBlock,
+      deployedAt: new Date().toISOString(), contracts, actors: art.actors };
+    localStorage.setItem("dc-deploy", JSON.stringify(result));
+    show($("#msg"), "All three contracts deployed.", true);
+    await refresh();
+  } catch (e) { show($("#msg"), esc(e.shortMessage || e.message), false); $("#deploy").disabled = false; }
+};
+
+$("#fund").onclick = async () => {
+  try {
+    for (const o of fundable()) {
+      show($("#msg"), `Confirm sending ${$("#amt").value} ETH to ${esc(o.label)} in MetaMask…`, true);
+      await (await signer.sendTransaction({ to: o.address, value: ethers.parseEther($("#amt").value) })).wait();
+      await refresh();
+    }
+    show($("#msg"), "Operator wallets funded.", true);
+  } catch (e) { show($("#msg"), esc(e.shortMessage || e.message), false); }
+};
+
+$("#dl").onclick = () => {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([$("#out").value], { type: "application/json" }));
+  a.download = "deployed.json"; a.click();
+};
+</script>
+</body>
+</html>

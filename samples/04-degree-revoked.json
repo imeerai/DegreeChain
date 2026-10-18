@@ -1,0 +1,20 @@
+{
+  "schema": "degreechain/v1",
+  "credentialId": "0x629c769342098c4c48ed69ef23c81320b6cfae7f2de6373a14505eab6eeb4e07",
+  "type": "Degree",
+  "institution": {
+    "name": "MUET Jamshoro (Demo Node)",
+    "department": "Department of Computer Systems Engineering",
+    "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
+  },
+  "holder": {
+    "name": "Kamran Ali Jatoi",
+    "fatherName": "Ali Nawaz Jatoi",
+    "rollNo": "21CS904"
+  },
+  "programme": "Bachelor of Engineering in Computer Systems Engineering",
+  "cgpa": "2.85",
+  "awardDate": "2025-12-20",
+  "issuedOn": "2026-10-17",
+  "salt": "zmr0rfM8_wOOb2c6DhQ85A"
+}

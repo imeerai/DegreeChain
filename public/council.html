@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Council portal · DegreeChain</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header><div class="wrap">
+  <a class="brand" href="/">DegreeChain <small>Academic Credential Verification</small></a>
+  <nav><a href="/">Home</a><a href="/verify.html">Verify</a><a href="/university.html">University</a><a href="/council.html" class="on">Council</a></nav>
+</div></header>
+
+<main><div class="wrap">
+  <h1>Accreditation council</h1>
+  <p class="lead" id="who">Governors decide which universities may issue credentials. Every decision needs a quorum of votes.</p>
+
+  <div class="box" id="login">
+    <div class="row">
+      <div><label>Governor account</label><select id="gov"></select></div>
+      <div><label>Password</label><input type="password" id="pw" placeholder="demo: council123"></div>
+      <div style="flex:0"><button id="loginBtn">Sign in</button></div>
+    </div>
+    <div id="loginMsg" class="hidden"></div>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="box">
+      <h2>Institutions <span id="quorum" style="font-weight:400;color:#666;font-size:14px"></span></h2>
+      <table><thead><tr><th>Institution</th><th>Wallet</th><th>Status</th><th>Votes this round</th><th>Vote</th></tr></thead>
+        <tbody id="insts"></tbody></table>
+      <div id="voteMsg" class="hidden"></div>
+    </div>
+    <div class="box">
+      <h2>Audit trail (on-chain events)</h2>
+      <table><thead><tr><th>Block</th><th>Event</th><th>Details</th><th>Tx</th></tr></thead><tbody id="audit"></tbody></table>
+    </div>
+  </div>
+</div></main>
+<footer class="wrap"></footer>
+<script src="/js/common.js"></script>
+<script>
+let meta;
+api("/api/meta").then((m) => {
+  meta = m;
+  $("#gov").innerHTML = m.actors.governors.map((g) => `<option value="${g.index}">${esc(g.label)}</option>`).join("");
+});
+
+$("#loginBtn").onclick = async () => {
+  try {
+    const r = await api("/api/login", { method: "POST", body: { role: "council", index: $("#gov").value, password: $("#pw").value } });
+    sessionStorage.setItem("token", r.token);
+    $("#who").innerHTML = `Signed in as <b>${esc(r.label)}</b> · wallet <code>${r.address}</code>`;
+    $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
+    refresh();
+  } catch (e) { show($("#loginMsg"), esc(e.message), false); }
+};
+
+const label = (addr) => {
+  const a = [...meta.actors.governors, ...meta.actors.institutions].find((x) => x.address.toLowerCase() === String(addr).toLowerCase());
+  return a ? a.label : short(addr);
+};
+
+async function refresh() {
+  const d = await api("/api/institutions");
+  $("#quorum").textContent = `(quorum: ${d.quorum} of ${meta.actors.governors.length})`;
+  $("#insts").innerHTML = d.institutions.map((i) => `<tr>
+    <td>${esc(i.name)}</td><td><code>${short(i.address)}</code></td>
+    <td><span class="pill ${i.status}">${i.status === "None" ? "Not accredited" : i.status}</span></td><td>${i.votes}</td>
+    <td>${i.status === "Active"
+      ? `<button class="small danger" onclick="vote('suspend','${i.address}')">Vote to suspend</button>`
+      : `<button class="small" onclick="vote('approve','${i.address}','${esc(i.label)}')">Vote to accredit</button>`}</td></tr>`).join("");
+
+  const ev = await api("/api/audit");
+  $("#audit").innerHTML = ev.map((e) => {
+    const details = e.event === "CredentialCorrected"
+      ? `<code>${short(e.args[0])}</code> → <code>${short(e.args[1])}</code> by ${esc(label(e.args[2]))}`
+      : e.event.startsWith("Credential")
+      ? `ID <code>${short(e.args[0])}</code> by ${esc(label(e.args[1]))}`
+      : `${esc(label(e.args[0]))}${e.args[1] && String(e.args[1]).startsWith("0x") ? " ← " + esc(label(e.args[1])) : ""}`;
+    return `<tr><td>#${e.block}</td><td>${e.event}</td><td>${details}</td><td><code>${short(e.tx)}</code></td></tr>`;
+  }).join("");
+}
+
+async function vote(action, institution, name) {
+  try {
+    const r = await api("/api/council/vote", { method: "POST", body: { action, institution, name, reason: 1 } });
+    show($("#voteMsg"), `Vote recorded in block #${r.block} (gas ${r.gasUsed}).`, true);
+  } catch (e) { show($("#voteMsg"), esc(e.message), false); }
+  refresh();
+}
+footer();
+</script>
+</body>
+</html>

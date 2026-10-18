@@ -1,0 +1,7 @@
+INFO:Detectors:
+Detector: timestamp
+CredentialRegistry._store(bytes32,bytes32,CredentialRegistry.Kind) (contracts/CredentialRegistry.sol#97-103) uses timestamp for comparisons
+	Dangerous comparisons:
+	- _creds[id].status != CredStatus.None (contracts/CredentialRegistry.sol#99)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Slither:. analyzed (5 contracts with 102 detectors), 1 result(s) found

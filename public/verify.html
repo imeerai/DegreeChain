@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verify a credential · DegreeChain</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header><div class="wrap">
+  <a class="brand" href="/">DegreeChain <small>Academic Credential Verification</small></a>
+  <nav><a href="/">Home</a><a href="/verify.html" class="on">Verify</a><a href="/university.html">University</a><a href="/council.html">Council</a></nav>
+</div></header>
+
+<main><div class="wrap">
+  <h1>Verify a credential</h1>
+  <p class="lead">No login needed. Decryption and hashing run in your browser; the key in the QR code is never sent to the server.</p>
+
+  <div class="box noprint">
+    <div class="tabs">
+      <button class="on" data-tab="file">Upload credential file</button>
+      <button data-tab="manual">Credential ID + key</button>
+    </div>
+    <div id="tab-file">
+      <label>Credential file (.json) received from the student</label>
+      <input type="file" id="file" accept=".json,application/json">
+    </div>
+    <div id="tab-manual" class="hidden">
+      <div class="row">
+        <div><label>Credential ID</label><input id="cid" placeholder="0x…"></div>
+        <div><label>Access key (from QR link)</label><input id="ckey" placeholder="base64 key"></div>
+        <div style="flex:0"><button id="go">Verify</button></div>
+      </div>
+    </div>
+    <div id="err" class="hidden"></div>
+  </div>
+
+  <div id="out" class="box hidden">
+    <div class="result">
+      <div>
+        <h2 id="headline"></h2>
+        <table class="kv" id="details"></table>
+      </div>
+      <div>
+        <div id="stamp" class="stamp"></div>
+        <p class="noprint" style="text-align:center;margin-top:18px"><button class="ghost small" onclick="print()">Print report</button></p>
+      </div>
+    </div>
+  </div>
+</div></main>
+<footer class="wrap"></footer>
+<script src="/js/common.js"></script>
+<script>
+document.querySelectorAll(".tabs button").forEach((b) => b.onclick = () => {
+  document.querySelectorAll(".tabs button").forEach((x) => x.classList.toggle("on", x === b));
+  $("#tab-file").classList.toggle("hidden", b.dataset.tab !== "file");
+  $("#tab-manual").classList.toggle("hidden", b.dataset.tab !== "manual");
+});
+
+async function check(cred) {
+  $("#err").className = "hidden";
+  if (!cred || !/^0x[0-9a-f]{64}$/i.test(cred.credentialId || "")) throw new Error("This file is not a DegreeChain credential.");
+  const hash = await sha256Hex(canonical(cred));
+  const r = await api(`/api/verify/${cred.credentialId}?hash=${hash}`);
+  render(cred, hash, r);
+}
+
+function render(cred, hash, r) {
+  let cls = "bad", big = "NOT AUTHENTIC", head = "This document does not match any record on the blockchain.";
+  if (r.status === "None") head = "No credential with this ID was ever issued.";
+  else if (!r.hashMatches) head = "The ID exists, but the document content has been changed (fingerprint mismatch).";
+  else if (r.status === "Revoked") { big = "REVOKED"; head = "Genuine record, but the university has revoked it."; }
+  else if (r.status === "Superseded") { cls = "warn"; big = "SUPERSEDED"; head = "Genuine, but a corrected version was issued. Ask the holder for the new document."; }
+  else if (!r.issuerActive) { cls = "warn"; big = "VALID*"; head = "Genuine and valid, but the issuing institution is currently suspended."; }
+  else { cls = "ok"; big = "VERIFIED"; head = "Authentic and valid credential."; }
+
+  $("#headline").textContent = head;
+  $("#stamp").className = "stamp " + cls;
+  $("#stamp").innerHTML = `<div class="small">DEGREECHAIN</div><div class="big">${big}</div><div class="small">${new Date().toLocaleDateString("en-GB")}</div><div class="small">BLOCK #${r.checkedAtBlock}</div>`;
+
+  const rows = [
+    ["Holder", `${esc(cred.holder?.name)} (Roll No. ${esc(cred.holder?.rollNo)})`],
+    ["Credential", `${esc(cred.type)} — ${esc(cred.programme)}`],
+    cred.cgpa ? ["CGPA", esc(cred.cgpa)] : null,
+    ["Award date", esc(cred.awardDate)],
+    ["Issued by", r.issuerName ? `${esc(r.issuerName)} <span class="pill ${r.issuerActive ? "Active" : "Suspended"}">${r.issuerActive ? "Accredited" : "Suspended"}</span>` : "—"],
+    ["On-chain status", `<span class="pill ${r.status}">${r.status}</span>`],
+    ["Fingerprint match", r.hashMatches ? "Yes" : "<b style='color:#a33'>No</b>"],
+    r.issuedAt ? ["Recorded on chain", new Date(r.issuedAt * 1000).toLocaleString("en-GB")] : null,
+    r.replacedBy ? ["Replaced by", `<code>${esc(r.replacedBy)}</code>`] : null,
+    ["Credential ID", `<code>${esc(cred.credentialId)}</code>`],
+    ["Computed SHA-256", `<code>${hash}</code>`],
+    ["Registry contract", `<code>${r.registry}</code>`],
+  ].filter(Boolean);
+  $("#details").innerHTML = rows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join("");
+  $("#out").classList.remove("hidden");
+}
+
+async function fromKey(id, key) {
+  const rec = await api(`/api/vault/${id}`);
+  let text;
+  try { text = await decryptRecord(rec, key); } catch { throw new Error("Wrong access key: the record could not be decrypted."); }
+  await check(JSON.parse(text));
+}
+
+function fail(e) { $("#out").classList.add("hidden"); show($("#err"), esc(e.message), false); }
+
+$("#file").onchange = async (ev) => {
+  try { await check(JSON.parse(await ev.target.files[0].text())); } catch (e) { fail(e); }
+};
+$("#go").onclick = () => fromKey($("#cid").value.trim(), $("#ckey").value.trim()).catch(fail);
+
+// QR code links open this page as verify.html#c=<id>&k=<key>
+const p = new URLSearchParams(location.hash.slice(1));
+if (p.get("c") && p.get("k")) {
+  $("#cid").value = p.get("c"); $("#ckey").value = p.get("k");
+  document.querySelector('[data-tab="manual"]').click();
+  fromKey(p.get("c"), p.get("k")).catch(fail);
+}
+footer();
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+node_modules
+artifacts
+cache
+data
+deployments/localhost.json
+.env
+coverage
+coverage
+coverage.json
+docs/

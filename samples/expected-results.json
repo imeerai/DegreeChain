@@ -1,0 +1,49 @@
+[
+  {
+    "file": "01-degree-valid",
+    "expect": "VERIFIED",
+    "id": "0x04de1043bf44b185ad1d34caa720b3b3bbe38ac216bb3665fff70ff71d5edce6",
+    "verifyUrl": "http://localhost:3000/verify.html#c=0x04de1043bf44b185ad1d34caa720b3b3bbe38ac216bb3665fff70ff71d5edce6&k=34DjbkvTZOSeO3veZgDoSluqt80TXjSaUKBBsdZVX4Y",
+    "gasUsed": "100108"
+  },
+  {
+    "file": "02-transcript-valid",
+    "expect": "VERIFIED",
+    "id": "0x101b271562891ae33e6c7689c6d33f0bb2ca1e8bb43906b04e675f9d6f05b347",
+    "verifyUrl": "http://localhost:3000/verify.html#c=0x101b271562891ae33e6c7689c6d33f0bb2ca1e8bb43906b04e675f9d6f05b347&k=JwnCsBEACeqiYaQufNlmcLVdHSlGJ24VxUxW6LowZiM",
+    "gasUsed": "83020"
+  },
+  {
+    "file": "03-microcredential-valid",
+    "expect": "VERIFIED",
+    "id": "0xa6259f921cb83e983c65e823e7629bb7ac55d07634b8373170cb59e16ddbcb4c",
+    "verifyUrl": "http://localhost:3000/verify.html#c=0xa6259f921cb83e983c65e823e7629bb7ac55d07634b8373170cb59e16ddbcb4c&k=SwXPBYKLxg8oWNIqPqjdF3CaxwX1EnJl2vkG1ewO_Mw",
+    "gasUsed": "83020"
+  },
+  {
+    "file": "04-degree-revoked",
+    "expect": "REVOKED",
+    "id": "0x629c769342098c4c48ed69ef23c81320b6cfae7f2de6373a14505eab6eeb4e07",
+    "verifyUrl": "http://localhost:3000/verify.html#c=0x629c769342098c4c48ed69ef23c81320b6cfae7f2de6373a14505eab6eeb4e07&k=-9wU5BMzHGHv-zgV53hgpSbR3egj7iZr0qnMbWFlSrM",
+    "gasUsed": "83008"
+  },
+  {
+    "file": "05a-transcript-superseded",
+    "expect": "SUPERSEDED",
+    "id": "0xce5649a30c6ab3f05ff6fd3486372e89f1a24ecc62ca6408f714c39e7f393cdb",
+    "verifyUrl": "http://localhost:3000/verify.html#c=0xce5649a30c6ab3f05ff6fd3486372e89f1a24ecc62ca6408f714c39e7f393cdb&k=wy7M-NJSLaeL3fmMYSjfkL7sPlPmUqPz8hXyHuWxDGY",
+    "gasUsed": "83020"
+  },
+  {
+    "file": "05b-transcript-corrected",
+    "expect": "VERIFIED",
+    "id": "0xccd73a223be7ef098660a55fc3fff415b256104387768d7cfba5814afeaffbd3",
+    "verifyUrl": "http://localhost:3000/verify.html#c=0xccd73a223be7ef098660a55fc3fff415b256104387768d7cfba5814afeaffbd3&k=7E6MXr2v3lu6-qvYGp542EbiSzpUEcz3gm0AN4rZmlU",
+    "gasUsed": "112950"
+  },
+  {
+    "file": "06-degree-tampered",
+    "expect": "NOT AUTHENTIC (fingerprint mismatch)",
+    "id": "0x04de1043bf44b185ad1d34caa720b3b3bbe38ac216bb3665fff70ff71d5edce6"
+  }
+]

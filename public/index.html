@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DegreeChain</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header><div class="wrap">
+  <a class="brand" href="/">DegreeChain <small>Academic Credential Verification</small></a>
+  <nav><a href="/" class="on">Home</a><a href="/verify.html">Verify</a><a href="/university.html">University</a><a href="/council.html">Council</a></nav>
+</div></header>
+
+<main><div class="wrap">
+  <h1>Verify degrees without calling the university</h1>
+  <p class="lead">Universities record a fingerprint of every degree, transcript and certificate on a shared consortium blockchain.
+  Employers and embassies scan the QR code on the document and get an answer in seconds.</p>
+
+  <div class="grid">
+    <div class="box"><h2>Employer / Embassy</h2><p>Scan the QR code, upload the credential file, or type the credential ID.</p><a class="btn" href="/verify.html">Verify a credential</a></div>
+    <div class="box"><h2>University office</h2><p>Issue, revoke or correct credentials. Each action is a signed blockchain transaction.</p><a class="btn" href="/university.html">University portal</a></div>
+    <div class="box"><h2>Accreditation council</h2><p>Governors vote (2 of 3) to accredit or suspend universities and can view the audit trail.</p><a class="btn" href="/council.html">Council portal</a></div>
+  </div>
+
+  <div class="box">
+    <h2>How it works</h2>
+    <table>
+      <tr><th style="width:40px">1</th><td>The university fills in the credential. The server builds a JSON record with a random salt and computes its SHA-256 fingerprint.</td></tr>
+      <tr><th>2</th><td>Only the fingerprint goes on-chain (<code>CredentialRegistry.issue</code>). The full record is encrypted with AES-256-GCM; the vault stores ciphertext only.</td></tr>
+      <tr><th>3</th><td>The decryption key is placed in the QR code on the PDF. Whoever holds the document can open the record; nobody else can.</td></tr>
+      <tr><th>4</th><td>The verifier's browser decrypts the record, recomputes the fingerprint and asks the chain whether it matches and is still valid.</td></tr>
+    </table>
+  </div>
+</div></main>
+<footer class="wrap"></footer>
+<script src="/js/common.js"></script>
+<script>footer();</script>
+</body>
+</html>

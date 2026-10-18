@@ -1,0 +1,29 @@
+
+> degreechain@1.0.0 setup
+> npm run deploy && npm run seed
+
+
+> degreechain@1.0.0 deploy
+> hardhat run scripts/deploy.js --network localhost
+
+GovernanceCouncil    0x5FbDB2315678afecb367f032d93F642f64180aa3
+InstitutionRegistry  0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+CredentialRegistry   0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
+Accredited           MUET Jamshoro (Demo Node) 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+Accredited           Partner University (Demo Node) 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65
+Saved deployments/localhost.json
+
+> degreechain@1.0.0 seed
+> node scripts/seed.js
+
+01-degree-valid              block 8  gas 100108
+02-transcript-valid          block 9  gas 83020
+03-microcredential-valid     block 10  gas 83020
+04-degree-revoked            block 11  gas 83008
+04-degree-revoked            revoked (reason 2 = fraud)
+05a-transcript-superseded    block 13  gas 83020
+05b-transcript-corrected     block 14  gas 112950
+06-degree-tampered           CGPA 3.12 -> 3.92 in the JSON copy
+07-unaccredited-institute    rejected: NotAccredited
+
+Samples written to samples/ (registry 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0)
