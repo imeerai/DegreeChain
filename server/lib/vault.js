@@ -32,7 +32,8 @@ async function rest(query, opts = {}) {
     headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", ...opts.headers },
   });
   if (!res.ok) throw new Error(`Vault error ${res.status}: ${await res.text()}`);
-  return res.status === 204 ? null : res.json();
+  const text = await res.text(); // inserts answer 201 with an empty body
+  return text ? JSON.parse(text) : null;
 }
 
 const supabaseVault = {
