@@ -6,7 +6,7 @@ const path = require("path");
 const fs = require("fs");
 const chain = require("./lib/chain");
 const { errorName, provider, contract, signer, STATUS, INST_STATUS } = chain;
-const { issueCredential } = require("./lib/issuer");
+const { issueCredential, openRecord } = require("./lib/issuer");
 const vault = require("./lib/vault");
 
 const app = express();
@@ -155,6 +155,15 @@ app.get("/api/credentials", auth("university"), wrap(async (req, res) => {
 app.post("/api/credentials", auth("university"), wrap(async (req, res) => {
   const out = await issueCredential(req.body, { instIndex: req.user.index });
   res.json(summary(out));
+}));
+
+// The issuing office reopens its own record (used by "Correct"). Other universities get 404.
+app.get("/api/credentials/:id/record", auth("university"), wrap(async (req, res) => {
+  const r = await vault.get(req.params.id);
+  if (!r || r.issuer !== req.user.address) return res.status(404).json({ error: "Record not found" });
+  const cred = openRecord(r, req.user.index);
+  if (!cred) return res.status(404).json({ error: "This record was issued before key wrapping; choose its .json file." });
+  res.json(cred);
 }));
 
 app.post("/api/credentials/:id/revoke", auth("university"), wrap(async (req, res) => {

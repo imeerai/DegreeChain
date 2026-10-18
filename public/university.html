@@ -155,11 +155,12 @@ async function erase(id) {
   catch (e) { show($("#listMsg"), esc(e.message), false); }
 }
 
-// The server never keeps the plain record, so the old fields come from this browser's copy
-// or from the credential .json the office saved when it issued it.
+// Old fields come from this browser's copy, else from the vault (only the issuing office can
+// unwrap its own records), else from the credential .json file.
 async function fix(id) {
   let c = null;
   try { c = JSON.parse(localStorage.getItem("cred:" + id)); } catch {}
+  if (!c) { try { c = await api(`/api/credentials/${id}/record`); } catch {} }
   if (!c) {
     show($("#listMsg"), "Choose the credential .json file of " + short(id) + " to load its fields.", true);
     const f = await new Promise((res) => { const i = $("#fixFile"); i.value = ""; i.onchange = () => res(i.files[0]); i.click(); });
